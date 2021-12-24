@@ -6,26 +6,39 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using static ClinicAPI.Constants;
 
 namespace ClinicAPI.Repo
 {
     public class ScheduleRepository
     {
-        public async Task<bool> CreateSchedule(CreateScheduleRequest scheduleRequest)
+        public async Task<RepoResponse<string>> CreateSchedule(CreateScheduleRequest scheduleRequest)
         {
             try
             {
                 using (var db = new MyDbContext())
                 {
 
-                    var checkDoctor = await db.UserPeoples.Where(x => x.Id ==scheduleRequest.DoctorId).FirstOrDefaultAsync();
+                    var checkDoctor = await db.UserPeoples.Where(x => x.Id == scheduleRequest.DoctorId).FirstOrDefaultAsync();
                     var checkPatient = await db.UserPeoples.Where(x => x.Id == scheduleRequest.PatientId).FirstOrDefaultAsync();
                     var checkService = await db.Services.Where(x => x.Id== scheduleRequest.ServiceId).FirstOrDefaultAsync();
                     var checkDoctorService = await db.DoctorServices.Where(x => x.UserId == scheduleRequest.DoctorId && x.ServiceId == scheduleRequest.ServiceId).FirstOrDefaultAsync();
                     
-                    if (checkDoctor == null || checkPatient == null || checkService ==null||checkDoctorService==null)
+                    if (checkDoctor == null)
                     {
-                        return false;
+                        return new RepoResponse<string> { Status = 0 ,Msg= "Không có bác sĩ này"};
+                    }
+                    if ( checkPatient == null )
+                    {
+                        return new RepoResponse<string> { Status = 0, Msg = "Không có bệnh nhân này" };
+                    }
+                    if ( checkService == null || checkDoctorService == null)
+                    {
+                        return new RepoResponse<string> { Status = 0, Msg = "Không có dịch vụ này" };
+                    }
+                    if (checkDoctorService == null)
+                    {
+                        return new RepoResponse<string> { Status = 0, Msg = "Không có bác sĩ nào khám dịch vụ này" };
                     }
                     var schedule = new Schedule
                     {
@@ -38,16 +51,16 @@ namespace ClinicAPI.Repo
                     };
                     db.Schedules.Add(schedule);
                     await db.SaveChangesAsync();
-                }
-                return true;
+                    return new RepoResponse<string> { Status = 1, Msg = "Tạo lịch hẹn thành công " };
+                }  
             }
             catch (Exception e)
             {
 
-                throw;
+                return new RepoResponse<string> { Status = 0, Msg = "Lỗi" };
             }
         }
-        public async Task<List<ScheduleOfDoctorModel>> GetScheduleOfDoctor(Guid idDoctor,int? status)
+        public async Task<RepoResponse<List<ScheduleOfDoctorModel>>> GetScheduleOfDoctor(Guid idDoctor,int? status)
         {
             try
             {
@@ -56,7 +69,7 @@ namespace ClinicAPI.Repo
                     var getDoctor = await db.UserPeoples.Where(x => x.Id == idDoctor).FirstOrDefaultAsync();
                     if (getDoctor == null)
                     {
-                        return null;
+                        return new RepoResponse<List<ScheduleOfDoctorModel>> { Status = 0, Msg= "Không tìm thấy bác sĩ này" };
                     }
                     var listScheduleDoctorDb = db.Schedules.Where(x => x.DoctorId == idDoctor);
                     if (status != null)
@@ -86,16 +99,16 @@ namespace ClinicAPI.Repo
                             });
                         }
                     }
-                    return data;
+                    return new RepoResponse<List<ScheduleOfDoctorModel>> {Status=1,Data=data } ;
 
                 }
             }
             catch (Exception e)
             {
-                return null;
+                return new RepoResponse<List<ScheduleOfDoctorModel>> { Status = 0, Msg = "Lỗi" };
             }
         }
-        public async Task<List<ScheduleOfPatientModel>> GetScheduleOfPatient(Guid idPatient, int? status)
+        public async Task<RepoResponse<List<ScheduleOfPatientModel>>> GetScheduleOfPatient(Guid idPatient, int? status)
         {
             try
             {
@@ -104,7 +117,7 @@ namespace ClinicAPI.Repo
                     var getPatient = await db.UserPeoples.Where(x => x.Id == idPatient).FirstOrDefaultAsync();
                     if (getPatient == null)
                     {
-                        return null;
+                        return new RepoResponse<List<ScheduleOfPatientModel>> { Status = 0, Msg = "Không tìm thấy bệnh nhân " };
                     }
                     var listSchedulePatientDb =db.Schedules.Where(x => x.PatientId == idPatient);
                     if (status != null)
@@ -133,15 +146,15 @@ namespace ClinicAPI.Repo
                             });
                         }
                     }
-                    return data;
+                    return new RepoResponse<List<ScheduleOfPatientModel>> { Status = 1, Data = data };
                 }
             }
             catch (Exception e)
             {
-                return null;
+                return new RepoResponse<List<ScheduleOfPatientModel>> { Status = 0, Msg = "Lỗi" };
             }
         }
-        public async Task<bool> UpdateSchedule( UpdateScheduleRequest updateSchedule)
+        public async Task<RepoResponse<string>> UpdateSchedule( UpdateScheduleRequest updateSchedule)
         {
             try
             {
@@ -150,15 +163,27 @@ namespace ClinicAPI.Repo
                     var checkIdSchedule = await db.Schedules.Where(x => x.Id == updateSchedule.Id).FirstOrDefaultAsync();
                     if(checkIdSchedule ==null )
                     {
-                        return false;
+                        return new RepoResponse<string> {Status = 0, Msg = "Không tồn tại lịch hẹn này" };
                     }
                     var checkIdDoctor = await db.UserPeoples.Where(x => x.Id == updateSchedule.DoctorId).FirstOrDefaultAsync();
                     var checkIdPatient = await db.UserPeoples.Where(x => x.Id == updateSchedule.PatientId).FirstOrDefaultAsync();
                     var checkIdService = await db.Services.Where(x => x.Id == updateSchedule.ServiceId).FirstOrDefaultAsync();
                     var checkDoctorService = await db.DoctorServices.Where(x => x.ServiceId == updateSchedule.ServiceId && x.UserId == updateSchedule.DoctorId).FirstOrDefaultAsync();
-                    if (checkIdDoctor == null || checkIdPatient == null || checkIdService == null || checkDoctorService == null)
+                    if (checkIdDoctor == null )
                     {
-                        return false;
+                        return new RepoResponse<string> { Status = 0, Msg = " Không có bác sĩ này " };
+                    }
+                    if (checkIdPatient == null )
+                    {
+                        return new RepoResponse<string> { Status = 0, Msg = " Không có bệnh nhân này " };
+                    }
+                    if (checkIdService == null )
+                    {
+                        return new RepoResponse<string> { Status = 0, Msg = " Không có dịch vụ này " };
+                    }
+                    if ( checkDoctorService == null)
+                    {
+                        return new RepoResponse<string> { Status = 0, Msg = " Không có bác sĩ dịch vụ này " };
                     }
                     var schedule = new Schedule
                     {
@@ -170,16 +195,15 @@ namespace ClinicAPI.Repo
                     };
                     db.Schedules.Update(schedule);
                     await db.SaveChangesAsync();
-                }
-                return true;
+                    return new RepoResponse<string> { Status = 1, Msg = " Cập nhật lịch hẹn thành công " };
+                }   
             }
-
             catch (Exception e)
             {
-                return false;
+                return new RepoResponse<string> {Status = 0 ,  Msg = " Lỗi " };
             }
         }
-        public async Task<bool>DeleteSchedule(Guid id)
+        public async Task<RepoResponse<string>>DeleteSchedule(Guid id)
         {
             try
             {
@@ -188,19 +212,19 @@ namespace ClinicAPI.Repo
                     var checkIdSchedule = await db.Schedules.Where(x => x.Id == id).FirstOrDefaultAsync();
                     if (checkIdSchedule == null)
                     {
-                        return false;
+                        return new RepoResponse<string> {Status = 0, Msg = " Không tồn tại lịch hẹn này " };
                     }
                     db.Schedules.Remove(checkIdSchedule);
                     await db.SaveChangesAsync();
                 }
-                return true;
+                return new RepoResponse<string> { Status = 1 ,Msg =" Xoá lịch hẹn thành công "};
             }
             catch (Exception e)
             {
-                return false;
+                return new RepoResponse<string> { Status = 0, Msg = " Lỗi " };
             }
         }
-        public async Task<ScheduleOfPatientModel>DetailSchedulePatient(Guid IdShcedule,Guid IdPatient)
+        public async Task<RepoResponse<ScheduleOfPatientModel>>DetailSchedulePatient(Guid IdShcedule,Guid IdPatient)
         {
             try
             {
@@ -208,9 +232,13 @@ namespace ClinicAPI.Repo
                 {
                     var checkIdSchedule = await db.Schedules.Where(x => x.Id == IdShcedule).FirstOrDefaultAsync();
                     var checkIdPatient = await db.UserPeoples.Where(x => x.Id == IdPatient).FirstOrDefaultAsync();
-                    if(checkIdSchedule==null || checkIdPatient ==null)
+                    if(checkIdSchedule == null )
                     {
-                        return null;
+                        return new RepoResponse<ScheduleOfPatientModel> {Status = 0 ,Msg = " Không tồn tại lịch hẹn " };
+                    }
+                    if ( checkIdPatient == null)
+                    {
+                        return new RepoResponse<ScheduleOfPatientModel> { Status = 0, Msg = " Không tồn tại bệnh nhân " };
                     }
                     var patientScheduleDetail = await db.Schedules.Where(x => x.Id == IdShcedule&&x.PatientId==IdPatient).
                         Join(db.UserPeoples,
@@ -222,9 +250,9 @@ namespace ClinicAPI.Repo
                               b=>b.Id,
                               (a, b) => new {a,b})
                         .FirstOrDefaultAsync();
-                    if(patientScheduleDetail==null)
+                    if(patientScheduleDetail == null)
                     {
-                        return null;
+                        return new RepoResponse<ScheduleOfPatientModel> { Status = 0 ,Msg = " Không có lịch hẹn bệnh nhân này " };
                     }
                     var data = new ScheduleOfPatientModel
                     {
@@ -235,15 +263,15 @@ namespace ClinicAPI.Repo
                         ServiceName=patientScheduleDetail.b.Name,
                         ServicePrice=patientScheduleDetail.b.Price
                     };
-                    return data; 
+                    return new RepoResponse<ScheduleOfPatientModel> {Status = 1 , Data = data }; 
                 }
             }
             catch (Exception e)
             {
-                throw;
+                return new RepoResponse<ScheduleOfPatientModel> { Status = 0, Msg = "Lỗi" };
             }
         }
-        public async Task<ScheduleOfDoctorModel> DetailScheduleDoctor(Guid IdShcedule, Guid IdDoctor)
+        public async Task<RepoResponse<ScheduleOfDoctorModel>> DetailScheduleDoctor(Guid IdShcedule, Guid IdDoctor)
         {
             try
             {
@@ -251,9 +279,13 @@ namespace ClinicAPI.Repo
                 {
                     var checkIdSchedule = await db.Schedules.Where(x => x.Id == IdShcedule).FirstOrDefaultAsync();
                     var checkIdDoctor = await db.UserPeoples.Where(x => x.Id == IdDoctor).FirstOrDefaultAsync();
-                    if (checkIdSchedule == null || checkIdDoctor == null)
+                    if (checkIdSchedule == null )
                     {
-                        return null;
+                        return new RepoResponse<ScheduleOfDoctorModel> {Status = 0, Msg = " Không tồn tại lịch hẹn này " };
+                    }
+                    if (checkIdDoctor == null)
+                    {
+                        return new RepoResponse<ScheduleOfDoctorModel> { Status = 0, Msg = " Không có bác sĩ này" };
                     }
                     var doctorScheduleDetail = await db.Schedules.Where(x => x.Id == IdShcedule && x.DoctorId==IdDoctor).
                         Join(db.UserPeoples,
@@ -274,13 +306,85 @@ namespace ClinicAPI.Repo
                         ServiceName = doctorScheduleDetail.b.Name,
                         ServicePrice = doctorScheduleDetail.b.Price
                     };
-                    return data;
+                    return new RepoResponse<ScheduleOfDoctorModel> {Status = 1 , Data =data };
                 }
             }
             catch (Exception e)
             {
-                throw;
+                return new RepoResponse<ScheduleOfDoctorModel> { Status = 0, Msg = " Lỗi " };
             }
         }
+        public async Task<RepoResponse<string>> ConfirmScheduleDoctor(ConfirmScheduleRequestDoctor request)
+        {
+
+            try
+            {
+                using (var db = new MyDbContext())
+                {
+                    var checkSchedule = await db.Schedules.Where(x => x.Id == request.ScheduleID).FirstOrDefaultAsync();
+
+                    if (checkSchedule == null)
+                    {
+                        return new RepoResponse<string> { Status = 0, Msg = "Lịch không tồn tại" };
+                    }
+                    if (checkSchedule.Status == (int)ScheduleStatus.COMFIRM)
+                    {
+                        return new RepoResponse<string> { Status = 0, Msg = "Lịch đã được xác nhận" };
+                    }
+                    if (checkSchedule.Status == (int)ScheduleStatus.PAIED)
+                    {
+                        return new RepoResponse<string> { Status = 0, Msg = "Lịch đã được thanh toán" };
+                    }
+                    if (checkSchedule.Status == (int)ScheduleStatus.CANCELED)
+                    {
+                        return new RepoResponse<string> { Status = 0, Msg = "Lịch đã bị huỷ" };
+                    }
+                    if (request.Status == 1 || request.Status == 3)
+                    {
+                        checkSchedule.Status = request.Status;
+                        db.Schedules.Update(checkSchedule);
+                        await db.SaveChangesAsync();
+                    }
+                    else
+                    {
+                        return new RepoResponse<string> { Status = 0, Msg = "trạng thái không hợp lệ" };
+                    }
+                    return new RepoResponse<string> { Status = 1, Msg = "Xác nhận lịch hẹn thành công" };
+                }
+            }
+            catch (Exception e)
+            {
+                return new RepoResponse<string> { Status = 0, Msg = "Lỗi" };
+            }
+        }
+        public async Task<RepoResponse<string>> CancelSchedulePatient(CancelSchedulePatient request)
+        {
+
+            try
+            {
+                using (var db = new MyDbContext())
+                {
+                    var checkSchedule = await db.Schedules.Where(x => x.Id == request.ScheduleID).FirstOrDefaultAsync();
+
+                    if (checkSchedule == null)
+                    {
+                        return new RepoResponse<string> { Status = 0, Msg = "Lịch không tồn tại" };
+                    }
+                    if (checkSchedule.Status != (int)ScheduleStatus.NOT_CONFIRM )
+                    {
+                        return new RepoResponse<string> { Status=0, Msg = "Không được phép huỷ" };
+                    }
+                    checkSchedule.Status = (int)ScheduleStatus.CANCELED;
+                    db.Schedules.Update(checkSchedule);
+                    await db.SaveChangesAsync();
+                    return new RepoResponse<string> { Status = 1, Msg ="Đã huỷ lịch hẹn thành công" };
+                }
+            }
+            catch (Exception e)
+            {
+                return new RepoResponse<string> { Status = 0, Msg = "Lỗi" };
+            }
+        }
+
     }
 }
