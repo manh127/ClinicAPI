@@ -2,14 +2,16 @@
 using ClinicAPI.Entity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ClinicAPI.Migrations
 {
     [DbContext(typeof(MyDbContext))]
-    partial class MyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20211229182248_UserPeople")]
+    partial class UserPeople
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -35,95 +37,20 @@ namespace ClinicAPI.Migrations
                     b.ToTable("DoctorServices");
                 });
 
-<<<<<<< HEAD
-            modelBuilder.Entity("ClinicAPI.Entity.Medicine", b =>
-                {
-                    b.Property<string>("IdMedicine")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("varchar(40)");
-
-                    b.Property<string>("NameMedicine")
-                        .HasColumnType("text");
-
-                    b.Property<string>("PriceMedicine")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Quantily")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Unit")
-                        .HasColumnType("text");
-
-                    b.Property<string>("UseMedicine")
-                        .HasColumnType("text");
-
-                    b.HasKey("IdMedicine");
-
-                    b.ToTable("medicines");
-                });
-
-            modelBuilder.Entity("ClinicAPI.Entity.MedicinePrescription", b =>
-                {
-                    b.Property<string>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("varchar(40)");
-
-                    b.Property<string>("IdMedicine")
-                        .IsRequired()
-                        .HasColumnType("varchar(40)");
-
-                    b.Property<string>("IdPrescription")
-                        .IsRequired()
-                        .HasColumnType("varchar(40)");
-
-                    b.Property<int>("QuantilyMedicine")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("PreMedicine");
-                });
-
-=======
->>>>>>> 38e20eabbc43b4bb1c7983053b97dcf501223b5b
             modelBuilder.Entity("ClinicAPI.Entity.Prescription", b =>
                 {
                     b.Property<string>("IdMedicine")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("varchar(40)");
 
-<<<<<<< HEAD
-                    b.Property<string>("Code")
-                        .HasColumnType("text");
-
-                    b.Property<byte[]>("Id")
-                        .IsRequired()
-                        .HasColumnType("varbinary(16)");
-
-                    b.Property<byte[]>("IdSchedule")
-                        .HasColumnType("varbinary(16)");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("text");
-
-=======
->>>>>>> 38e20eabbc43b4bb1c7983053b97dcf501223b5b
                     b.Property<string>("NameMedicine")
                         .HasColumnType("text");
 
                     b.Property<string>("PriceMedicine")
                         .HasColumnType("text");
 
-<<<<<<< HEAD
-                    b.Property<string>("Quantily")
-                        .HasColumnType("text");
-
-                    b.Property<double>("TimeStamp")
-                        .HasColumnType("double");
-=======
                     b.Property<int>("Quantily")
                         .HasColumnType("int");
->>>>>>> 38e20eabbc43b4bb1c7983053b97dcf501223b5b
 
                     b.Property<string>("Unit")
                         .HasColumnType("text");
@@ -181,6 +108,7 @@ namespace ClinicAPI.Migrations
                         .HasColumnType("varchar(40)");
 
                     b.Property<string>("DateTimeStamp")
+                        .IsRequired()
                         .HasColumnType("varchar(40)");
 
                     b.Property<string>("DoctorId")
@@ -224,7 +152,7 @@ namespace ClinicAPI.Migrations
                 {
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("varchar(100)");
+                        .HasColumnType("varchar(40)");
 
                     b.Property<string>("Address")
                         .HasColumnType("text");
