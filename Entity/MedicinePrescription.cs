@@ -7,19 +7,15 @@ using System.Threading.Tasks;
 
 namespace ClinicAPI.Entity
 {
-    public class Schedule
+    public class MedicinePrescription
     {
         [Column(TypeName = "varchar(40)")]
         [Key]
         public Guid Id { get; set; }
         [Column(TypeName = "varchar(40)")]
-        public Guid DoctorId { get; set; }
+        public Guid IdPrescription { get; set; }
         [Column(TypeName = "varchar(40)")]
-        public Guid PatientId { get; set; }
-        [Column(TypeName = "varchar(40)")]
-        public string DateTimeStamp { get; set; }
-        public int Status { get; set; }
-        [Column(TypeName = "varchar(40)")]
-        public Guid ServiceId { get; set; }
+        public Guid IdMedicine { get; set; }
+        public int QuantilyMedicine { get; set; }
     }
 }
